@@ -1,0 +1,11 @@
+# Generated cluster configs with real values
+configs/*/cluster-config.local.yaml
+ood-clusters/*.yml
+
+# macOS
+.DS_Store
+
+# Editor
+.idea/
+.vscode/
+*.swp

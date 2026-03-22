@@ -1,0 +1,47 @@
+Region: us-east-1
+Image:
+  Os: alinux2023
+HeadNode:
+  InstanceType: t3.medium
+  Networking:
+    SubnetId: subnet-xxxxxxxxxxxxxxxxx
+  Ssh:
+    KeyName: ""  # Leave empty — use SSM Session Manager
+  Iam:
+    AdditionalIamPolicies:
+      - Policy: arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+  CustomActions:
+    OnNodeConfigured:
+      Script: s3://YOUR_BUCKET/scripts/setup-head-node.sh
+      Args:
+        - --oidc-issuer=https://cognito-idp.us-east-1.amazonaws.com/us-east-1_XXXXXXXX
+        - --dynamodb-table=oid-uid-map-test
+
+Scheduling:
+  Scheduler: slurm
+  SlurmQueues:
+    - Name: cpu
+      CapacityType: ONDEMAND
+      Networking:
+        SubnetIds:
+          - subnet-xxxxxxxxxxxxxxxxx
+      ComputeResources:
+        - Name: c5-xlarge
+          InstanceType: c5.xlarge
+          MinCount: 0
+          MaxCount: 10
+      Iam:
+        AdditionalIamPolicies:
+          - Policy: arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      CustomActions:
+        OnNodeConfigured:
+          Script: s3://YOUR_BUCKET/scripts/setup-compute-nodes.sh
+          Args:
+            - --dynamodb-table=oid-uid-map-test
+
+SharedStorage:
+  - MountDir: /home
+    Name: home-efs
+    StorageType: Efs
+    EfsSettings:
+      FileSystemId: fs-xxxxxxxxxxxxxxxxx

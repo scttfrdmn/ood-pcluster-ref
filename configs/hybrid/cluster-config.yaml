@@ -1,0 +1,74 @@
+# Hybrid configuration: on-prem head node + cloud compute nodes.
+# Users authenticate via oidc-pam on both head node and compute nodes.
+# /home is shared EFS; /scratch is FSx Lustre in cloud, NFS-exported on-prem.
+Region: us-east-1
+Image:
+  Os: alinux2023
+HeadNode:
+  InstanceType: m6i.large
+  Networking:
+    SubnetId: subnet-xxxxxxxxxxxxxxxxx
+  Iam:
+    AdditionalIamPolicies:
+      - Policy: arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+  CustomActions:
+    OnNodeConfigured:
+      Script: s3://YOUR_BUCKET/scripts/setup-head-node.sh
+      Args:
+        - --oidc-issuer=https://cognito-idp.us-east-1.amazonaws.com/us-east-1_XXXXXXXX
+        - --dynamodb-table=oid-uid-map-prod
+        - --efs-id=fs-xxxxxxxxxxxxxxxxx
+
+Scheduling:
+  Scheduler: slurm
+  SlurmQueues:
+    - Name: cpu-ondemand
+      CapacityType: ONDEMAND
+      Networking:
+        SubnetIds:
+          - subnet-xxxxxxxxxxxxxxxxx
+          - subnet-yyyyyyyyyyyyyyyyy
+      ComputeResources:
+        - Name: hpc6a
+          InstanceType: hpc6a.48xlarge
+          MinCount: 0
+          MaxCount: 32
+
+    - Name: cpu-spot
+      CapacityType: SPOT
+      Networking:
+        SubnetIds:
+          - subnet-xxxxxxxxxxxxxxxxx
+          - subnet-yyyyyyyyyyyyyyyyy
+      ComputeResources:
+        - Name: c5n-18xlarge
+          InstanceType: c5n.18xlarge
+          MinCount: 0
+          MaxCount: 64
+
+    - Name: gpu
+      CapacityType: SPOT
+      Networking:
+        SubnetIds:
+          - subnet-xxxxxxxxxxxxxxxxx
+      ComputeResources:
+        - Name: p4d-24xlarge
+          InstanceType: p4d.24xlarge
+          MinCount: 0
+          MaxCount: 8
+
+SharedStorage:
+  - MountDir: /home
+    Name: home-efs
+    StorageType: Efs
+    EfsSettings:
+      FileSystemId: fs-xxxxxxxxxxxxxxxxx
+      EncryptionInTransit: true
+  - MountDir: /scratch
+    Name: scratch-fsx
+    StorageType: FsxLustre
+    FsxLustreSettings:
+      StorageCapacity: 7200
+      DeploymentType: PERSISTENT_2
+      DataCompressionType: LZ4
+      PerUnitStorageThroughput: 125

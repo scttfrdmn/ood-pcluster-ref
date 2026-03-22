@@ -1,0 +1,45 @@
+# Burst configuration: on-prem head node, cloud compute burst.
+# The head node is managed externally (on-prem); only compute nodes
+# are created by ParallelCluster.
+#
+# Requires:
+#   - Direct Connect or VPN between on-prem and AWS VPC
+#   - On-prem head node running SLURM with aws-parallelcluster-node package
+Region: us-east-1
+Image:
+  Os: alinux2023
+HeadNode:
+  # Note: for pure burst mode, the head node is external (on-prem).
+  # This node acts as a controller for the cloud burst partition only.
+  InstanceType: t3.small
+  Networking:
+    SubnetId: subnet-xxxxxxxxxxxxxxxxx
+  Iam:
+    AdditionalIamPolicies:
+      - Policy: arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+
+Scheduling:
+  Scheduler: slurm
+  SlurmQueues:
+    - Name: cloud-burst
+      CapacityType: SPOT
+      Networking:
+        SubnetIds:
+          - subnet-xxxxxxxxxxxxxxxxx
+          - subnet-yyyyyyyyyyyyyyyyy
+      ComputeResources:
+        - Name: c5-2xlarge
+          InstanceType: c5.2xlarge
+          MinCount: 0
+          MaxCount: 50
+      Iam:
+        AdditionalIamPolicies:
+          - Policy: arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+
+SharedStorage:
+  - MountDir: /home
+    Name: home-efs
+    StorageType: Efs
+    EfsSettings:
+      # Mount the same EFS used by the on-prem cluster (requires Direct Connect)
+      FileSystemId: fs-xxxxxxxxxxxxxxxxx
