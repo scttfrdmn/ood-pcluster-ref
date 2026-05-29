@@ -29,6 +29,19 @@ echo "=== Setting up oidc-pam on head node ==="
 echo "  OIDC issuer    : ${OIDC_ISSUER}"
 echo "  DynamoDB table : ${DYNAMODB_TABLE}"
 echo "  Region         : ${REGION}"
+echo "  EFS id         : ${EFS_ID:-<none>}"
+
+# Mount shared EFS home if an --efs-id was supplied. oidc-pam provisions user
+# homes under /home (home_dir_prefix in broker.yaml below), so /home must be the
+# shared EFS mount for UIDs to see consistent home directories across nodes.
+if [ -n "${EFS_ID}" ]; then
+  echo "Mounting EFS ${EFS_ID} at /home"
+  command -v mount.efs >/dev/null 2>&1 || yum install -y amazon-efs-utils 2>/dev/null || true
+  if ! mountpoint -q /home; then
+    mount -t efs -o tls "${EFS_ID}":/ /home
+    grep -q "${EFS_ID}:/ /home" /etc/fstab || echo "${EFS_ID}:/ /home efs _netdev,tls 0 0" >> /etc/fstab
+  fi
+fi
 
 # Install oidc-pam from latest GitHub release
 ARCH=$(uname -m)

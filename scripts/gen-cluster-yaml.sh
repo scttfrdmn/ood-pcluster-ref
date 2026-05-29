@@ -66,5 +66,6 @@ v2:
 CLUSTERCONF
 
 echo "==> Generated ${OUTPUT_DIR}/${CLUSTER_NAME}.yml"
-echo "    Head node: ${HEAD_NODE_IP}"
+echo "    Head node:  ${HEAD_NODE_IP}"
+echo "    Partitions: $(echo "${PARTITIONS}" | paste -sd, -)"
 echo "    Reload OOD: /opt/ood/ood-portal-generator/sbin/update_ood_portal && systemctl reload nginx"
