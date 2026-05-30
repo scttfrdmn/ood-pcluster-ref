@@ -61,8 +61,13 @@ v2:
     submit_host: "${HEAD_NODE_IP}"
     bin: "/opt/slurm/bin"
     conf: "/opt/slurm/etc/slurm.conf"
+    # OOD 4.x defaults Slurm to --export=NONE; restore env propagation for srun.
+    copy_environment: "true"
     bin_overrides:
       sbatch: "%{OOD_PORTAL_DIR}/bin/slurm/sbatch"
+      squeue: "%{OOD_PORTAL_DIR}/bin/slurm/squeue"
+      scancel: "%{OOD_PORTAL_DIR}/bin/slurm/scancel"
+      scontrol: "%{OOD_PORTAL_DIR}/bin/slurm/scontrol"
 CLUSTERCONF
 
 echo "==> Generated ${OUTPUT_DIR}/${CLUSTER_NAME}.yml"
