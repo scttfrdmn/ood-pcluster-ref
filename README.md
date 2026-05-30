@@ -1,5 +1,9 @@
 # ood-pcluster-ref
 
+[![CI](https://github.com/scttfrdmn/ood-pcluster-ref/actions/workflows/ci.yml/badge.svg)](https://github.com/scttfrdmn/ood-pcluster-ref/actions/workflows/ci.yml)
+[![shellcheck](https://img.shields.io/badge/lint-shellcheck-89e051.svg)](https://www.shellcheck.net/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Reference AWS ParallelCluster configurations and OOD setup scripts for aws-openondemand.
 
 ## Contents
