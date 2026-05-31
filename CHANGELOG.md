@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-05-30
+
 ### Fixed
 - `ood-clusters/parallelcluster.yml.tmpl` + `scripts/gen-cluster-yaml.sh`: confirmed the
   OOD clusters.d `v2` schema is current for OOD 4.x (verified vs OOD 4.2 docs; there is no
